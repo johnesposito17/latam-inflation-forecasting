@@ -72,22 +72,31 @@ COUNTRIES = {
     "ARG": "Argentina",
 }
 
-# FRED series for FX rates (LCU per USD, daily or monthly)
+# FRED series for FX rates (LCU per USD, monthly mean).
+# MEX, BRA, CHL: Federal Reserve H.10 DEX series (daily → monthly).
+# COL, ARG: IFS "Currency Conversions" series (CCUSMA02, already monthly).
 FX_SERIES = {
     "MEX": "DEXMXUS",
     "BRA": "DEXBZUS",
     "CHL": "DEXCHUS",
-    "COL": "DEXCOUS",
-    "ARG": "DEXARUS",
+    "COL": "COLCCUSMA02STM",
+    "ARG": "ARGCCUSMA02STM",
 }
 
-# FRED series for short-term policy rates (OECD MEI hosted on FRED, monthly %)
+# FRED series for short-term policy/money-market rates (monthly %).
+# MEX, BRA, CHL: OECD Immediate Rates (IRSTCI01) hosted on FRED.
+# COL: OECD Call Money Rate (COLIRSTCI01STM) — closest monthly proxy for
+#      Banco de la República policy rate available on FRED.
+# ARG: No monthly policy rate available on FRED; will be filled as NaN
+#      and noted in docs/NOTES.md. Argentina's monetary policy rate is
+#      complex (multiple simultaneous rates, capital controls) and is
+#      excluded from OECD MEI coverage.
 RATE_SERIES = {
     "MEX": "IRSTCI01MXM156N",
     "BRA": "IRSTCI01BRM156N",
     "CHL": "IRSTCI01CLM156N",
-    "COL": "IRSTCI01COM156N",
-    "ARG": "IRSTCI01ARM156N",
+    "COL": "COLIRSTCI01STM",
+    "ARG": None,   # not available on FRED; handled below
 }
 
 # FRED series for commodity prices
@@ -169,6 +178,9 @@ def main():
     print("\n=== Policy rates (% p.a.) ===")
     rate_frames = []
     for country_code, series_id in RATE_SERIES.items():
+        if series_id is None:
+            print(f"  {COUNTRIES[country_code]}: no FRED series available — will be NaN in model features")
+            continue
         s = fetch_fred(series_id, fred_key)
         if s.empty:
             print(f"    SKIPPING {COUNTRIES[country_code]} — no rate data")

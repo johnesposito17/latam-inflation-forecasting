@@ -142,7 +142,7 @@ def main():
             fx,
             "fx_lcu_per_usd",
             "FX rate (LCU per USD)",
-            expected_range=(0.0, 1_500.0),   # ARS has been ~1000+ by 2024
+            expected_range=(0.0, 10_000.0),  # COP runs 3k-5k/USD; ARS 1k+ by 2024
         )
         # Special note for Argentina — official rate can diverge from reality
         arg_fx = fx[fx["country"] == "Argentina"]
